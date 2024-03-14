@@ -146,7 +146,6 @@ export default function MainScreen() {
 
 // borderWidth: 1,
 // borderColor: '#000',
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
