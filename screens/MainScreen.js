@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-trailing-spaces */
 /* eslint-disable react/react-in-jsx-scope */
 import { useState } from 'react';
 import {
@@ -16,14 +17,42 @@ import {
 import { BgColor, darkBlue, greyBlue, whiteColor } from '../assets/colors/colors';
 import { MagnifyingGlassIcon, MapPinIcon } from 'react-native-heroicons/outline';
 import HourlyWeather from '../components/HourlyWeather';
+import DailyWeather from '../components/DailyWeather';
+import { fetchCurrentWeather, fetchForecastPerDay } from '../api/weatherdb';
 const { width, height } = Dimensions.get('screen');
 
 // import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function MainScreen() {
-  function handleSearch(value) {
+  const [currentWeather, setCurrentWeather] = useState({});
+  const [forecast1Day, setForecast1Day] = useState({});
+  const [hourlyWeather, setHourlyWeather] = useState([]);
+  const [isDay, setIsDay] = useState(1);
+  const [localTime, setLocalTime] = useState('');
+  const [localDate, setLocalDate] = useState('');
+  const [city, setCity] = useState('');
+
+  async function handleSearch(value) {
     if (value && value.length > 3) {
-      console.log('VALUE >>', value);
+      setCity(value);
+      const getCurrWeatherData = await fetchCurrentWeather({
+        q: value,
+      });
+      if (getCurrWeatherData && getCurrWeatherData.data) {
+        setCurrentWeather(getCurrWeatherData.data);
+        setIsDay(currentWeather?.current?.is_day);
+        setLocalTime(currentWeather?.location?.localtime?.slice(11,));
+        setLocalDate(currentWeather?.location?.localtime?.slice(0, 10));
+      }
+      const getForecast1DayWeatherData = await fetchForecastPerDay({
+        q: value,
+        days: 1,
+      });
+      // console.log('1 day Forecast IS ------', forecast1DayWeatherData.data.forecast.forecastday);
+      if (getForecast1DayWeatherData && getForecast1DayWeatherData?.data) {
+        setForecast1Day(getForecast1DayWeatherData?.data?.forecast?.forecastday[0]);
+        setHourlyWeather(getForecast1DayWeatherData?.data?.forecast?.forecastday[0]?.hour);
+      }
     }
   }
 
@@ -45,32 +74,39 @@ export default function MainScreen() {
 
         <View style={styles.currInfoCont}>
           <View style={styles.currInfoTextCont}>
-            <Text style={styles.currDegree}>13°</Text>
-            <Text style={styles.CurrCondition}>Cloudy</Text>
-            <Text style={styles.CurrLocation}>
-              Veliko Tarnovo{' '}
+            <Text style={styles.currDegree}>{currentWeather?.current?.temp_c} °</Text>
+            <Text style={styles.CurrCondition}>{currentWeather?.current?.condition.text}</Text>
+            <Text style={styles.CurrLocation}>{currentWeather?.location?.name}{' '}
               <MapPinIcon size={28} color={whiteColor} strokeWidth={2} />
             </Text>
-            <Text style={styles.CurrFeelsLike}>13° / 6° Feels like 11°</Text>
+            <Text style={styles.CurrFeelsLike}>{Math.round(forecast1Day?.day?.maxtemp_c)}° / {Math.round(forecast1Day?.day?.mintemp_c)}° Feels like {Math.round(currentWeather?.current?.feelslike_c)}°</Text>
           </View>
           <View>
             <Image
               style={styles.currWeatherImg}
-              source={require('../assets/weather_icons/day/122.png')}
+              // source={require('../assets/weather_icons/day/122.png')}
+              source={{ uri: `https:${currentWeather?.current?.condition?.icon}` }}
             />
           </View>
         </View>
 
         {/* hourly weather componenty */}
-        <HourlyWeather />
+        <HourlyWeather data={hourlyWeather} time={localTime} currWeather={currentWeather} />
 
         <View style={styles.textInfoCont}>
           {/* forecast -> forecastday [0] el -> day -> condition -> text  */}
-          <Text style={styles.textInfoHeader}>Dry day ahead</Text>
-          <Text style={styles.textInfo}>Expect Saturday to be next dry day</Text>
+          <Text style={styles.textInfoHeader}>Daily information</Text>
+          <Text style={styles.textInfo}>{forecast1Day?.day?.condition?.text}</Text>
+          <Text style={styles.textInfo}>
+            {isDay === 1 ? 
+              `Don't miss the sunset at ${forecast1Day?.astro?.sunset}` : 
+              `Wake up with the sunrise at ${forecast1Day?.astro?.sunrise}`
+            }
+          </Text>
         </View>
 
-        
+        {/* daily weather componenty */}
+        <DailyWeather date={localDate} city={city} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -84,7 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: BgColor,
   },
   searchCont: {
-    width: width * 0.6,
+    width: width * 0.7,
     alignSelf: 'center',
     marginTop: 30,
     flexDirection: 'row',
@@ -98,6 +134,7 @@ const styles = StyleSheet.create({
   searchInput: {
     fontSize: 15,
     fontWeight: '400',
+    color: greyBlue,
   },
 
   currInfoCont: {
