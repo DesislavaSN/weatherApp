@@ -8,64 +8,45 @@ import { whiteColor } from '../assets/colors/colors';
 const { width, height } = Dimensions.get('screen');
 
 
-export default function DayComponent({day}) {
-    const [dayWeek, setDayWeek] = useState('Monday');
-    console.log(day);
+export default function DayComponent({data, day}) {
+    const [dayWeek, setDayWeek] = useState('');
     const today = new Date().getDay();
-    console.log('TODAY ---', today);
 
     useEffect(() => {
         getDayOfWeek();
     }, []);
 
     function getDayOfWeek() {
-        // if (day.day === today) {
-        //     setDayWeek('Today');
-        // } else {
-        //     if (day.day === 1) {
-        //         setDayWeek('Monday');
-        //     } else if (day.day === 2){
-        //         setDayWeek('Tuesday');
-        //     } else if (day.day === 3){
-        //         setDayWeek('Wednesday');
-        //     } else if (day.day === 4){
-        //         setDayWeek('Thursday');
-        //     } else if (day.day === 5){
-        //         setDayWeek('Friday');
-        //     } else if (day.day === 6){
-        //         setDayWeek('Saturday');
-        //     } else if (day.day === 0){
-        //         setDayWeek('Sunday');
-        //     }
-        // }
+        let theDay = new Date(day).getDay();
 
-        if (day === today) {
+        if (theDay === today) {
             setDayWeek('Today');
-        } else if (day === 1) {
+        } else if (theDay === 1) {
             setDayWeek('Monday');
-        } else if (day === 2) {
+        } else if (theDay === 2) {
             setDayWeek('Tuesday');
-        } else if (day === 3) {
+        } else if (theDay === 3) {
             setDayWeek('Wednesday');
-        } else if (day === 4) {
+        } else if (theDay === 4) {
             setDayWeek('Thursday');
-        } else if (day === 5) {
+        } else if (theDay === 5) {
             setDayWeek('Friday');
-        } else if (day === 6) {
+        } else if (theDay === 6) {
             setDayWeek('Saturday');
-        } else if (day.day === 0) {
+        } else if (theDay === 0) {
             setDayWeek('Sunday');
         }
     }
-
 
     return (
         <View style={styles.container}>
             <Text style={styles.theDay}>{dayWeek}</Text>
             <View style={styles.forecast}>
-                <Text style={styles.forecastEl}>8%</Text>
-                <Image source={require('../assets/weather_icons/day/122.png')} />
-                <Text style={styles.forecastEl}>13° 6°</Text>
+                <Text style={styles.forecastEl}>
+                    {data.day.daily_will_it_rain}%
+                </Text>
+                <Image style={styles.img} source={{ uri: `https:${data.day.condition.icon}`}} />
+                <Text style={styles.forecastEl}>{Math.round(data.day?.maxtemp_c)}° {Math.round(data.day?.mintemp_c)}°</Text>
             </View>
         </View>
     );
@@ -75,8 +56,6 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        // borderWidth: 1,
-        // borderColor: whiteColor,
         height: 40,
     },
     theDay: {
@@ -95,5 +74,9 @@ const styles = StyleSheet.create({
         color: whiteColor,
         fontWeight: '500',
         fontSize: 18,
+    },
+    img: {
+        width: 40,
+        height: 40,
     },
 });

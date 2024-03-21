@@ -1,114 +1,168 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable no-trailing-spaces */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/react-in-jsx-scope */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
-  Keyboard,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { BgColor, darkBlue, greyBlue, whiteColor } from '../assets/colors/colors';
-import { MagnifyingGlassIcon, MapPinIcon } from 'react-native-heroicons/outline';
+import { useRoute } from '@react-navigation/native';
+import { BgColor, darkBlue, whiteColor } from '../assets/colors/colors';
+import { ChevronLeftIcon, MapPinIcon } from 'react-native-heroicons/outline';
 import HourlyWeather from '../components/HourlyWeather';
 import DailyWeather from '../components/DailyWeather';
-import { fetchCurrentWeather, fetchForecastPerDay } from '../api/weatherdb';
+import Loading from '../components/Loading';
 const { width, height } = Dimensions.get('screen');
+import { fetchCurrentWeather, fetchForecastPerDay } from '../api/weatherdb';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome6';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+import EntypoIcon from 'react-native-vector-icons/Entypo';
 
-// import Icon from 'react-native-vector-icons/FontAwesome';
-
-export default function MainScreen() {
+export default function MainScreen({ navigation }) {
+  const { params: city } = useRoute();
   const [currentWeather, setCurrentWeather] = useState({});
   const [forecast1Day, setForecast1Day] = useState({});
   const [hourlyWeather, setHourlyWeather] = useState([]);
-  const [isDay, setIsDay] = useState(1);
   const [localTime, setLocalTime] = useState('');
-  const [localDate, setLocalDate] = useState('');
-  const [city, setCity] = useState('');
+  const [isDay, setIsDay] = useState(1);
+  const [loading, setLoading] = useState();
 
-  async function handleSearch(value) {
-    if (value && value.length > 3) {
-      setCity(value);
-      const getCurrWeatherData = await fetchCurrentWeather({
-        q: value,
-      });
-      if (getCurrWeatherData && getCurrWeatherData.data) {
-        setCurrentWeather(getCurrWeatherData.data);
-        setIsDay(currentWeather?.current?.is_day);
-        setLocalTime(currentWeather?.location?.localtime?.slice(11,));
-        setLocalDate(currentWeather?.location?.localtime?.slice(0, 10));
-      }
-      const getForecast1DayWeatherData = await fetchForecastPerDay({
-        q: value,
-        days: 1,
-      });
-      // console.log('1 day Forecast IS ------', forecast1DayWeatherData.data.forecast.forecastday);
-      if (getForecast1DayWeatherData && getForecast1DayWeatherData?.data) {
-        setForecast1Day(getForecast1DayWeatherData?.data?.forecast?.forecastday[0]);
-        setHourlyWeather(getForecast1DayWeatherData?.data?.forecast?.forecastday[0]?.hour);
-      }
+  useEffect(() => {
+    setLoading(true);
+    getCurrWeatherData();
+    getForecast1DayWeatherData();
+  }, []);
+
+  const getCurrWeatherData = async () => {
+    const data = await fetchCurrentWeather({
+      q: city.city,
+    });
+    if (data && data.data) {
+      setCurrentWeather(data.data);
+      setIsDay(data?.current?.is_day);
+      setLocalTime(data?.location?.localtime?.slice(11));
     }
-  }
+  };
+
+  const getForecast1DayWeatherData = async () => {
+    const data = await fetchForecastPerDay({
+      q: city.city,
+      days: 1,
+    });
+    if (data && data.data) {
+      setForecast1Day(data);
+      setHourlyWeather(data.data?.forecast?.forecastday[0]?.hour);
+    }
+  };
+
+  // console.log('==>==>', currentWeather?.location?.name);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} >
-        <View style={styles.searchCont}>
-          <TextInput
-            placeholder="Search place"
-            placeholderTextColor={greyBlue}
-            cursorColor={greyBlue}
-            style={styles.searchInput}
-            onChangeText={handleSearch}
-          />
-          <TouchableOpacity onPress={Keyboard.dismiss}>
-            <MagnifyingGlassIcon size={22} color={greyBlue} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.currInfoCont}>
-          <View style={styles.currInfoTextCont}>
-            <Text style={styles.currDegree}>{currentWeather?.current?.temp_c} °</Text>
-            <Text style={styles.CurrCondition}>{currentWeather?.current?.condition.text}</Text>
-            <Text style={styles.CurrLocation}>{currentWeather?.location?.name}{' '}
-              <MapPinIcon size={28} color={whiteColor} strokeWidth={2} />
+      <SafeAreaView style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.backBtnCont}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => navigation.goBack()}>
+              <ChevronLeftIcon size={30} color={darkBlue} strokeWidth={2.5} />
+            </TouchableOpacity>
+            <Text style={styles.CurrLocation}>
+              {currentWeather?.location?.name}{' '}
+              <MapPinIcon size={28} color={'#124076'} strokeWidth={2.5} />
             </Text>
-            <Text style={styles.CurrFeelsLike}>{Math.round(forecast1Day?.day?.maxtemp_c)}° / {Math.round(forecast1Day?.day?.mintemp_c)}° Feels like {Math.round(currentWeather?.current?.feelslike_c)}°</Text>
           </View>
-          <View>
-            <Image
-              style={styles.currWeatherImg}
-              // source={require('../assets/weather_icons/day/122.png')}
-              source={{ uri: `https:${currentWeather?.current?.condition?.icon}` }}
-            />
+          <View style={styles.currInfoCont}>
+            <View style={styles.currInfoTextCont}>
+              <Text style={styles.currDegree}>
+                {Math.round(currentWeather?.current?.temp_c)} °
+              </Text>
+              <Text style={styles.CurrCondition}>
+                {currentWeather?.current?.condition.text}
+              </Text>
+              <Text style={styles.CurrFeelsLike}>
+                {Math.round(
+                  forecast1Day?.data?.forecast?.forecastday[0]?.day?.maxtemp_c,
+                )}
+                ° /{' '}
+                {Math.round(
+                  forecast1Day?.data?.forecast?.forecastday[0]?.day?.mintemp_c,
+                )}
+                ° Feels like {Math.round(currentWeather?.current?.feelslike_c)}°
+              </Text>
+            </View>
+            <View>
+              <Image
+                style={styles.currWeatherImg}
+                // source={require('../assets/weather_icons/day/122.png')}
+                source={{
+                  uri: `https:${currentWeather?.current?.condition?.icon}`,
+                }}
+              />
+            </View>
           </View>
-        </View>
 
-        {/* hourly weather componenty */}
-        <HourlyWeather data={hourlyWeather} time={localTime} currWeather={currentWeather} />
+          {/* hourly weather component */}
+          <HourlyWeather
+            hourlyWeather={hourlyWeather}
+            time={localTime}
+            currWeather={currentWeather}
+          />
 
-        <View style={styles.textInfoCont}>
-          {/* forecast -> forecastday [0] el -> day -> condition -> text  */}
-          <Text style={styles.textInfoHeader}>Daily information</Text>
-          <Text style={styles.textInfo}>{forecast1Day?.day?.condition?.text}</Text>
-          <Text style={styles.textInfo}>
-            {isDay === 1 ? 
-              `Don't miss the sunset at ${forecast1Day?.astro?.sunset}` : 
-              `Wake up with the sunrise at ${forecast1Day?.astro?.sunrise}`
-            }
-          </Text>
-        </View>
+          <View style={styles.textInfoCont}>
+            <Text style={styles.textInfoHeader}>Daily information</Text>
+            <Text style={styles.textInfo}>
+              {forecast1Day?.data?.forecast?.forecastday[0]?.day?.condition?.text}
+            </Text>
+            <Text style={styles.textInfo}>
+              {isDay === 1
+                ? `Don't miss the sunset at ${forecast1Day?.data?.forecast?.forecastday[0]?.astro?.sunset}`
+                : `Wake up with the sunrise at ${forecast1Day?.data?.forecast?.forecastday[0]?.astro?.sunrise}`}
+            </Text>
+          </View>
 
-        {/* daily weather componenty */}
-        <DailyWeather date={localDate} city={city} />
-      </ScrollView>
-    </SafeAreaView>
+          {/* daily weather componenty */}
+          <DailyWeather city={city.city} />
+
+          <View style={styles.shortInfo}>
+            <View style={styles.shortInfoConts}>
+              <FontAwesomeIcon name="sun" size={35} color="yellow" style={styles.icon} />
+              <Text style={styles.shortInfoHeader}>UV Index</Text>
+              <Text style={styles.shortInfoText}>Low</Text>
+            </View>
+            <View style={styles.shortInfoConts}>
+              <FeatherIcon name="wind" size={35} color="#607274" style={styles.icon} />
+              <Text style={styles.shortInfoHeader}>Wind</Text>
+              <Text style={styles.shortInfoText}>23 km/h</Text>
+            </View>
+            <View style={styles.shortInfoConts}>
+                <EntypoIcon name="drop" size={35} color="blue" style={styles.icon} />
+              <Text style={styles.shortInfoHeader}>Humidity</Text>
+              <Text style={styles.shortInfoText}>59%</Text>
+            </View>
+            <View style={styles.shortInfoConts2}>
+              <View style={styles.innerContShortInfo2}>
+                <FeatherIcon name="sunrise" size={30} color="yellow" />
+                <Text style={styles.shortInfoHeader2}>Sunrise</Text>
+                <Text style={styles.shortInfoText2}>6:32</Text>
+              </View>
+              <View style={styles.innerContShortInfo2}>
+                <FeatherIcon name="sunset" size={30} color="red" />
+                <Text style={styles.shortInfoHeader2}>Sunset</Text>
+                <Text style={styles.shortInfoText2}>18:21</Text>
+              </View>
+            </View>
+          </View>
+
+        </ScrollView>
+      </SafeAreaView>
+    // )
+
   );
 }
 
@@ -119,26 +173,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BgColor,
   },
-  searchCont: {
-    width: width * 0.7,
-    alignSelf: 'center',
+  backBtnCont: {
     marginTop: 30,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    borderRadius: 10,
     alignItems: 'center',
-    paddingHorizontal: 10,
-    marginBottom: 30,
   },
-  searchInput: {
-    fontSize: 15,
-    fontWeight: '400',
-    color: greyBlue,
+  backBtn: {
+    marginLeft: 20,
   },
-
   currInfoCont: {
-    marginBottom: 30,
+    marginTop: 15,
+    marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
@@ -147,19 +192,23 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
   },
   currDegree: {
+    marginBottom: 18,
     color: whiteColor,
-    fontSize: 70,
+    fontSize: 80,
     fontWeight: '500',
   },
   CurrCondition: {
     color: whiteColor,
     fontSize: 25,
-    marginBottom: 25,
+    marginBottom: 15,
   },
   CurrLocation: {
-    color: whiteColor,
-    fontSize: 22,
-    marginBottom: 10,
+    // color: darkBlue,
+    color: '#124076',
+    fontSize: 30,
+    marginLeft: width * 0.1,
+    fontWeight: '600',
+    fontFamily: 'Ubuntu-Bold',
   },
   CurrFeelsLike: {
     color: whiteColor,
@@ -238,5 +287,59 @@ const styles = StyleSheet.create({
     color: whiteColor,
     fontWeight: '400',
     fontSize: 15,
+  },
+  shortInfo: {
+    height: 370,
+    marginBottom: 20,
+    flexWrap: 'wrap',
+  },
+
+  shortInfoConts: {
+    width: width * 0.45,
+    height: height * 0.20,
+    margin: 10,
+    backgroundColor: darkBlue,
+    borderRadius: 20,
+    alignItems: 'center',
+    paddingTop: height * 0.04,
+  },
+  shortInfoConts2: {
+    width: width * 0.45,
+    height: height * 0.20,
+    margin: 10,
+    backgroundColor: darkBlue,
+    borderRadius: 20,
+    alignItems: 'center',
+
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  innerContShortInfo2: {
+    alignItems: 'center',
+  },
+  icon: {
+    marginBottom: 7,
+  },
+  shortInfoHeader: {
+    color: whiteColor,
+    fontSize: 21,
+    fontWeight: '700',
+
+  },
+  shortInfoText : {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#607274',
+  },
+  shortInfoHeader2: {
+    color: whiteColor,
+    fontSize: 18,
+    fontWeight: '500',
+
+  },
+  shortInfoText2: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#607274',
   },
 });

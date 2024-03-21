@@ -9,21 +9,21 @@ import { useEffect, useState } from 'react';
 import { fetchForecastPerDay } from '../api/weatherdb';
 
 
-export default function DailyWeather({date, city}) {
-    const day = new Date(date).getDay();
-    // console.log('#### ', city);
-    // console.log('===', day); // Sunday - Saturday : 0 - 6
-
+export default function DailyWeather({city}) {
+    // console.log('CITY IS:', city);
+    const [sevenDaysForecast, setSevenDaysForecast] = useState([]);
     useEffect(() => {
         getForecast7DaysWeatherData();
     },[]);
 
-    const getForecast7DaysWeatherData = async ( params) => {
+    const getForecast7DaysWeatherData = async () => {
         const data = await fetchForecastPerDay({
             q: city,
             days: 7,
         });
-        console.log('~~~~~ ', data);
+        if (data && data.data.forecast.forecastday) {
+            setSevenDaysForecast(data.data.forecast.forecastday);
+        }
     };
 
     return (
@@ -33,13 +33,13 @@ export default function DailyWeather({date, city}) {
                     <Text style={styles.pastDay}>Yesterday</Text>
                     <Text style={styles.pastDay}>13° 7°</Text>
                 </View>
-                <DayComponent day={day} />
-                <DayComponent day={day + 1} />
-                <DayComponent day={day + 2} />
-                <DayComponent day={day + 3} />
-                <DayComponent day={day + 4} />
-                <DayComponent day={day + 4 === 6 && 0} />
-                <DayComponent day={day - 1} />
+                {
+                    sevenDaysForecast.map((el, i) => {
+                        return (
+                            <DayComponent key={i} day={el.date} data={el} />
+                        );
+                    })
+                }
             </View>
         </SafeAreaView>
     );

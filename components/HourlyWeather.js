@@ -15,23 +15,22 @@ import {
 import { darkBlue, whiteColor } from '../assets/colors/colors';
 const { width, height } = Dimensions.get('screen');
 
-export default function HourlyWeather({ data, time, currWeather }) {
-    // console.log('======== ', data);
-    // console.log('===> ', currWeather?.current?.temp_c);
+export default function HourlyWeather({ hourlyWeather, currWeather }) {
+    // console.log('======== ', currWeather);
 
     return (
         <View style={styles.hourlyWeatherCont}>
             <View style={styles.pastWeatherCont}>
                 {/* v tozi text component se izpisva s text kakvo e bilo vremeto po-rano dnes ( da si proverq v app-a na tel-a)
                 Ex: Periods of light rain early. Low 3°C.*/}
-                <Text style={styles.pastWeatherText}>{currWeather?.current?.condition?.text}</Text>
+                <Text style={styles.pastWeatherText}>{currWeather.current?.condition?.text}</Text>
             </View>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.hourlyWeatherScrollCont}
             >
-                {data?.map((el, i) => {
+                {hourlyWeather?.map((el, i) => {
                     {/* console.log('SINGLE EL >>>', el); */}
 
                     return (
