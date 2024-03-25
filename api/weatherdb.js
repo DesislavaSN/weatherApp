@@ -1,15 +1,12 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable eol-last */
-import axios from "axios";
-import { apiKey } from "../constants";
+import axios from 'axios';
+import { apiKey } from '../constants';
 
-// forecast weather 1 day:
-// http://api.weatherapi.com/v1/forecast.json?key=0fa7f89ce07f48b3a75134133241303&q=veliko turnovo&days=1
-
-const baseUrl = 'http://api.weatherapi.com/v1';
+const baseUrl = 'https://api.weatherapi.com/v1';
 const currentWeather = `${baseUrl}/current.json?key=${apiKey}`;
 const forecast1Day = `${baseUrl}/forecast.json?key=${apiKey}`;
-
+const forecastHistory = `${baseUrl}/history.json?key=${apiKey}`;
 
 const apiRequest = async (endpoint, params) => {
     const options = {
@@ -36,7 +33,12 @@ const fetchForecastPerDay = async (params) => {
     return apiRequest(forecast1Day, params);
 };
 
+const fetchHistoryForecast = async (params) => {
+    return apiRequest(forecastHistory, params);
+};
+
 export {
     fetchCurrentWeather,
     fetchForecastPerDay,
+    fetchHistoryForecast,
 };

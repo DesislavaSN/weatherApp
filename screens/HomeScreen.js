@@ -5,7 +5,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable quotes */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Dimensions, ImageBackground, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { greyBlue, whiteColor } from "../assets/colors/colors";
 import { MagnifyingGlassIcon } from 'react-native-heroicons/outline';

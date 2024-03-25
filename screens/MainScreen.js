@@ -31,7 +31,7 @@ export default function MainScreen({ navigation }) {
   const [hourlyWeather, setHourlyWeather] = useState([]);
   const [localTime, setLocalTime] = useState('');
   const [isDay, setIsDay] = useState(1);
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -41,128 +41,136 @@ export default function MainScreen({ navigation }) {
 
   const getCurrWeatherData = async () => {
     const data = await fetchCurrentWeather({
-      q: city.city,
+      q: city.city.trim(),
     });
+    // console.log(data);
     if (data && data.data) {
+      setLoading(false);
       setCurrentWeather(data.data);
-      setIsDay(data?.current?.is_day);
-      setLocalTime(data?.location?.localtime?.slice(11));
+      setIsDay(data.data?.current?.is_day);
+      setLocalTime(data.data?.location?.localtime?.slice(11));
     }
   };
 
   const getForecast1DayWeatherData = async () => {
     const data = await fetchForecastPerDay({
-      q: city.city,
+      q: city.city.trim(),
       days: 1,
     });
     if (data && data.data) {
+      setLoading(false);
       setForecast1Day(data);
       setHourlyWeather(data.data?.forecast?.forecastday[0]?.hour);
     }
   };
 
-  // console.log('==>==>', currentWeather?.location?.name);
-
   return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.backBtnCont}>
-            <TouchableOpacity
-              style={styles.backBtn}
-              onPress={() => navigation.goBack()}>
-              <ChevronLeftIcon size={30} color={darkBlue} strokeWidth={2.5} />
-            </TouchableOpacity>
-            <Text style={styles.CurrLocation}>
-              {currentWeather?.location?.name}{' '}
-              <MapPinIcon size={28} color={'#124076'} strokeWidth={2.5} />
+    <SafeAreaView style={styles.container}>
+    {loading ? (
+      <Loading />
+    ) : (
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.backBtnCont}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}>
+            <ChevronLeftIcon size={30} color={darkBlue} strokeWidth={2.5} />
+          </TouchableOpacity>
+          <Text style={styles.CurrLocation}>
+            {currentWeather.location?.name}{' '}
+            <MapPinIcon size={28} color={'#124076'} strokeWidth={2.5} />
+          </Text>
+        </View>
+        <View style={styles.currInfoCont}>
+          <View style={styles.currInfoTextCont}>
+            <Text style={styles.currDegree}>
+              {Math.round(currentWeather.current?.temp_c)} °
+            </Text>
+            <Text style={styles.CurrCondition}>
+              {currentWeather.current?.condition.text}
+            </Text>
+            <Text style={styles.CurrFeelsLike}>
+              {Math.round(
+                forecast1Day.data?.forecast?.forecastday[0]?.day?.maxtemp_c,
+              )}
+              ° /{' '}
+              {Math.round(
+                forecast1Day.data?.forecast?.forecastday[0]?.day?.mintemp_c,
+              )}
+              ° Feels like {Math.round(currentWeather?.current?.feelslike_c)}°
             </Text>
           </View>
-          <View style={styles.currInfoCont}>
-            <View style={styles.currInfoTextCont}>
-              <Text style={styles.currDegree}>
-                {Math.round(currentWeather?.current?.temp_c)} °
-              </Text>
-              <Text style={styles.CurrCondition}>
-                {currentWeather?.current?.condition.text}
-              </Text>
-              <Text style={styles.CurrFeelsLike}>
-                {Math.round(
-                  forecast1Day?.data?.forecast?.forecastday[0]?.day?.maxtemp_c,
-                )}
-                ° /{' '}
-                {Math.round(
-                  forecast1Day?.data?.forecast?.forecastday[0]?.day?.mintemp_c,
-                )}
-                ° Feels like {Math.round(currentWeather?.current?.feelslike_c)}°
-              </Text>
-            </View>
-            <View>
-              <Image
-                style={styles.currWeatherImg}
-                // source={require('../assets/weather_icons/day/122.png')}
-                source={{
-                  uri: `https:${currentWeather?.current?.condition?.icon}`,
-                }}
-              />
-            </View>
+          <View>
+            <Image
+              style={styles.currWeatherImg}
+              // source={require('../assets/weather_icons/day/122.png')}
+              source={{
+                uri: `https:${currentWeather.current?.condition?.icon}`,
+              }}
+            />
           </View>
+        </View>
 
-          {/* hourly weather component */}
-          <HourlyWeather
-            hourlyWeather={hourlyWeather}
-            time={localTime}
-            currWeather={currentWeather}
-          />
+        {/* hourly weather component */}
+        <HourlyWeather
+          hourlyWeather={hourlyWeather}
+          time={localTime}
+          currWeather={currentWeather}
+        />
 
-          <View style={styles.textInfoCont}>
-            <Text style={styles.textInfoHeader}>Daily information</Text>
-            <Text style={styles.textInfo}>
-              {forecast1Day?.data?.forecast?.forecastday[0]?.day?.condition?.text}
-            </Text>
-            <Text style={styles.textInfo}>
-              {isDay === 1
-                ? `Don't miss the sunset at ${forecast1Day?.data?.forecast?.forecastday[0]?.astro?.sunset}`
-                : `Wake up with the sunrise at ${forecast1Day?.data?.forecast?.forecastday[0]?.astro?.sunrise}`}
+        <View style={styles.textInfoCont}>
+          <Text style={styles.textInfoHeader}>Daily information</Text>
+          <Text style={styles.textInfo}>
+            {forecast1Day.data?.forecast?.forecastday[0]?.day?.condition?.text}
+          </Text>
+          <Text style={styles.textInfo}>
+            {isDay === 1
+              ? `Don't miss the sunset at ${forecast1Day.data?.forecast?.forecastday[0]?.astro?.sunset}`
+              : `Wake up with the sunrise at ${forecast1Day.data?.forecast?.forecastday[0]?.astro?.sunrise}`}
+          </Text>
+        </View>
+
+        {/* daily weather componenty */}
+        <DailyWeather city={city.city}/>
+
+        <View style={styles.shortInfo}>
+          <View style={styles.shortInfoConts}>
+            <FontAwesomeIcon name="sun" size={35} color="yellow" style={styles.icon} />
+            <Text style={styles.shortInfoHeader}>UV Index</Text>
+            <Text style={styles.shortInfoText}>
+              {forecast1Day.data?.current?.uv <= 3 ? 'Low' :
+              forecast1Day.data?.current?.uv >= 4 ? 'Midium' :
+              forecast1Day.data?.current?.uv <= 6 ? 'Midium' : 'High'}
             </Text>
           </View>
-
-          {/* daily weather componenty */}
-          <DailyWeather city={city.city} />
-
-          <View style={styles.shortInfo}>
-            <View style={styles.shortInfoConts}>
-              <FontAwesomeIcon name="sun" size={35} color="yellow" style={styles.icon} />
-              <Text style={styles.shortInfoHeader}>UV Index</Text>
-              <Text style={styles.shortInfoText}>Low</Text>
+          <View style={styles.shortInfoConts}>
+            <FeatherIcon name="wind" size={35} color="#607274" style={styles.icon} />
+            <Text style={styles.shortInfoHeader}>Wind</Text>
+            <Text style={styles.shortInfoText}>{forecast1Day.data?.current?.wind_kph} km/h</Text>
+          </View>
+          <View style={styles.shortInfoConts}>
+            <EntypoIcon name="drop" size={35} color="blue" style={styles.icon} />
+            <Text style={styles.shortInfoHeader}>Humidity</Text>
+            <Text style={styles.shortInfoText}>{forecast1Day.data?.current?.humidity}%</Text>
+          </View>
+          <View style={styles.shortInfoConts2}>
+            <View style={styles.innerContShortInfo2}>
+              <FeatherIcon name="sunrise" size={30} color="yellow" style={styles.icon}/>
+              <Text style={styles.shortInfoHeader2}>Sunrise</Text>
+              <Text style={styles.shortInfoText2}>{forecast1Day.data?.forecast?.forecastday[0]?.astro?.sunrise}</Text>
             </View>
-            <View style={styles.shortInfoConts}>
-              <FeatherIcon name="wind" size={35} color="#607274" style={styles.icon} />
-              <Text style={styles.shortInfoHeader}>Wind</Text>
-              <Text style={styles.shortInfoText}>23 km/h</Text>
-            </View>
-            <View style={styles.shortInfoConts}>
-                <EntypoIcon name="drop" size={35} color="blue" style={styles.icon} />
-              <Text style={styles.shortInfoHeader}>Humidity</Text>
-              <Text style={styles.shortInfoText}>59%</Text>
-            </View>
-            <View style={styles.shortInfoConts2}>
-              <View style={styles.innerContShortInfo2}>
-                <FeatherIcon name="sunrise" size={30} color="yellow" />
-                <Text style={styles.shortInfoHeader2}>Sunrise</Text>
-                <Text style={styles.shortInfoText2}>6:32</Text>
-              </View>
-              <View style={styles.innerContShortInfo2}>
-                <FeatherIcon name="sunset" size={30} color="red" />
-                <Text style={styles.shortInfoHeader2}>Sunset</Text>
-                <Text style={styles.shortInfoText2}>18:21</Text>
-              </View>
+            <View style={styles.innerContShortInfo2}>
+              <FeatherIcon name="sunset" size={30} color="red" style={styles.icon}/>
+              <Text style={styles.shortInfoHeader2}>Sunset</Text>
+              <Text style={styles.shortInfoText2}>{forecast1Day.data?.forecast?.forecastday[0]?.astro?.sunset}</Text>
             </View>
           </View>
+        </View>
 
-        </ScrollView>
-      </SafeAreaView>
-    // )
-
+      </ScrollView>
+    )}
+      
+    </SafeAreaView>
   );
 }
 
@@ -326,7 +334,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
 
   },
-  shortInfoText : {
+  shortInfoText: {
     fontSize: 18,
     fontWeight: '500',
     color: '#607274',

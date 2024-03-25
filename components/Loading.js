@@ -5,11 +5,13 @@
 import { View, StyleSheet, Dimensions } from 'react-native';
 import * as Progress from 'react-native-progress';
 const {width, height} = Dimensions.get('window');
+import { darkBlue, whiteColor } from '../assets/colors/colors';
+
 
 export default function Loading() {
     return (
         <View style={styles.loadingCont}>
-          <Progress.CircleSnail size={160} color={['#eab308', 'white']} thickness={12} />
+          <Progress.CircleSnail size={160} color={[darkBlue, whiteColor]} thickness={12} />
         </View>
     );
 }
