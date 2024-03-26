@@ -43,7 +43,7 @@ export default function DayComponent({data, day}) {
             <Text style={styles.theDay}>{dayWeek}</Text>
             <View style={styles.forecast}>
                 <Text style={styles.forecastEl}>
-                    {data.day.daily_will_it_rain}%
+                    {data.day.daily_chance_of_rain}%
                 </Text>
                 <Image style={styles.img} source={{ uri: `https:${data.day.condition.icon}`}} />
                 <Text style={styles.forecastEl}>{Math.round(data.day?.maxtemp_c)}° {Math.round(data.day?.mintemp_c)}°</Text>

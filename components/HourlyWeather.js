@@ -1,9 +1,10 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-lone-blocks */
 /* eslint-disable keyword-spacing */
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable react/react-in-jsx-scope */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Dimensions,
     Image,
@@ -15,8 +16,8 @@ import {
 import { darkBlue, whiteColor } from '../assets/colors/colors';
 const { width, height } = Dimensions.get('screen');
 
-export default function HourlyWeather({ hourlyWeather, currWeather }) {
-    // console.log('======== ', currWeather);
+export default function HourlyWeather({ hourlyWeather, currWeather, lastUpdated }) {
+    // console.log('======== ', lastUpdated);
 
     return (
         <View style={styles.hourlyWeatherCont}>
@@ -25,22 +26,23 @@ export default function HourlyWeather({ hourlyWeather, currWeather }) {
                 Ex: Periods of light rain early. Low 3°C.*/}
                 <Text style={styles.pastWeatherText}>{currWeather.current?.condition?.text}</Text>
             </View>
+            
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.hourlyWeatherScrollCont}
             >
                 {hourlyWeather?.map((el, i) => {
-                    {/* console.log('SINGLE EL >>>', el); */}
-
-                    return (
+                    let hour = Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4, -3) : el.time.slice(-5, -3);
+                    return (Number(lastUpdated) <= hour ? (
                         <View key={i} style={styles.hourCont}>
                             <Text style={styles.hour}>{el.time.slice(-5)}</Text>
                             <Image style={styles.img} source={{ uri: `https:${el?.condition?.icon}` }} />
                             <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
                             <Text style={styles.humidity}>{el.humidity}%</Text>
                         </View>
-                    );
+                    ) : null);
+                    
                 })}
             </ScrollView>
         </View>
@@ -106,24 +108,19 @@ const styles = StyleSheet.create({
 });
 
 
-/* if(Number(el.time.slice(11,13)) >= Number(time.slice(0,2))) {
-        console.log('true');
-        return (
-            <View key={i} style={styles.hourCont}>
-                <Text style={styles.hour}>{el.time.slice(-5)}</Text>
-                <Image style={styles.img} source={{ uri: `https:${el.condition.icon}`}} />
-                <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
-                <Text style={styles.humidity}>{el.humidity}%</Text>
-            </View>
-        );
-    } else {
-        return (
-            <View key={i} style={styles.hourCont}>
-                <Text style={styles.hour}>{el.time.slice(-5)}</Text>
-                <Image style={styles.img} source={{ uri: `https:${el.condition.icon}` }} />
-                <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
-                <Text style={styles.humidity}>{el.humidity}%</Text>
-            </View>
-        );
-    } 
-    */
+/* 
+
+{hourlyWeather?.map((el, i) => {
+    console.log(lastUpdated <= el.time.slice(-5, -3) === true ? el.time.slice(-5, -3) : 'NO');
+
+    return (
+        <View key={i} style={styles.hourCont}>
+            <Text style={styles.hour}>{el.time.slice(-5)}</Text>
+            <Image style={styles.img} source={{ uri: `https:${el?.condition?.icon}` }} />
+            <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
+            <Text style={styles.humidity}>{el.humidity}%</Text>
+        </View>
+    );
+})} 
+    
+*/
