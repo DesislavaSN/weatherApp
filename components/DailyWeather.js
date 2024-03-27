@@ -16,8 +16,8 @@ export default function DailyWeather({city}) {
     yesterday.setDate(yesterday.getDate() - 1);
     const prevDate = yesterday.toISOString().slice(0, 10);
     const [historyForecast, setHistoryForecast] = useState({});
-
     const [sevenDaysForecast, setSevenDaysForecast] = useState([]);
+
     useEffect(() => {
         getForecast7DaysWeatherData();
         getForecastPrevDay();
@@ -42,6 +42,8 @@ export default function DailyWeather({city}) {
             setHistoryForecast(data.data);
         }
     };
+
+    // console.log('>>>>>', sevenDaysForecast.length);
 
     return (
         <SafeAreaView style={styles.container}>

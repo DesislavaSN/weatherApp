@@ -36,7 +36,7 @@ export default function HourlyWeather({ hourlyWeather, currWeather, lastUpdated 
                     let hour = Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4, -3) : el.time.slice(-5, -3);
                     return (Number(lastUpdated) <= hour ? (
                         <View key={i} style={styles.hourCont}>
-                            <Text style={styles.hour}>{el.time.slice(-5)}</Text>
+                            <Text style={styles.hour}>{Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4) : el.time.slice(-5)}</Text>
                             <Image style={styles.img} source={{ uri: `https:${el?.condition?.icon}` }} />
                             <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
                             <Text style={styles.humidity}>{el.humidity}%</Text>

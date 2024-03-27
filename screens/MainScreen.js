@@ -65,17 +65,16 @@ export default function MainScreen({ navigation }) {
       days: 1,
       alerts: 'yes',
     });
-    // console.log(data.data.alerts.alert[0].desc);
 
     if (data && data.data) {
       setLoading(false);
       setForecast1Day(data);
       setHourlyWeather(data.data?.forecast?.forecastday[0]?.hour);
-      setWeatherAlerts(data.data?.alerts?.alert[0]);
+      setWeatherAlerts(data.data?.alerts?.alert);
     }
   };
 
-  // console.log('--->>>----', currentWeather.location?.localtime.slice(-5, -3));
+  // console.log('--->>>----', weatherAlerts[0].desc);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -112,7 +111,7 @@ export default function MainScreen({ navigation }) {
                 )}
                 ° Feels like {Math.round(currentWeather?.current?.feelslike_c)}°
               </Text>
-              <Text style={styles.CurrFeelsLike}>{today.toString().slice(0,3)}, {today.toString().slice(4, 10)}, {localTime.slice(-5)}</Text>
+              <Text style={styles.CurrFeelsLike}>{today.toString().slice(0, 3)}, {today.toString().slice(4, 10)}, {localTime.slice(-5)}</Text>
             </View>
             <View>
               <Image
@@ -124,26 +123,28 @@ export default function MainScreen({ navigation }) {
             </View>
           </View>
 
-          <View style={styles.alerts}>
-          <View style={styles.alertsHeader}>
-              <FontAwesome5Icon name="exclamation-triangle" size={24} color={whiteColor} style={{marginRight: 10}}/>
-              <Text style={styles.alertsHeaderText}>Severe weather alerts</Text>
-          </View>
-            <Text style={[styles.alertsText, {marginLeft: 38}]}>{weatherAlerts.event}</Text>
-            <TouchableOpacity onPress={() => setReadMore(isOpen => !isOpen)} style={styles.downBtnCont}>
-              <Text style={styles.alertsBtnText}>Read more</Text>
-              {!readMore ? (
-                <ChevronDownIcon size={20} color={'lightgrey'} strokeWidth={4} />
-              ) : (
-                <ChevronUpIcon size={20} color={'lightgrey'} strokeWidth={4} />
-              )}
-            </TouchableOpacity>
-            {readMore ? (
-              <View>
-                <Text style={styles.alertsText}>{weatherAlerts.desc}</Text>
+          {weatherAlerts.length !== 0 && (
+            <View style={styles.alerts}>
+              <View style={styles.alertsHeader}>
+                <FontAwesome5Icon name="exclamation-triangle" size={24} color={whiteColor} style={{ marginRight: 10 }} />
+                <Text style={styles.alertsHeaderText}>Severe weather alerts</Text>
               </View>
-            ) : null}
-          </View>
+              <Text style={[styles.alertsText, { marginLeft: 38 }]}>{weatherAlerts[0].event}</Text>
+              <TouchableOpacity onPress={() => setReadMore(isOpen => !isOpen)} style={styles.downBtnCont}>
+                <Text style={styles.alertsBtnText}>Read more</Text>
+                {!readMore ? (
+                  <ChevronDownIcon size={20} color={'lightgrey'} strokeWidth={4} />
+                ) : (
+                  <ChevronUpIcon size={20} color={'lightgrey'} strokeWidth={4} />
+                )}
+              </TouchableOpacity>
+              {readMore ? (
+                <View>
+                  <Text style={styles.alertsText}>{weatherAlerts[0].desc}</Text>
+                </View>
+              ) : null}
+            </View>
+          )}
 
           {/* hourly weather component */}
           <HourlyWeather
@@ -279,6 +280,7 @@ const styles = StyleSheet.create({
   alertsText: {
     color: whiteColor,
     marginBottom: 18,
+    textAlign: 'justify',
   },
   downBtnCont: {
     flexDirection: 'row',
