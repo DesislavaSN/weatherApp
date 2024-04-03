@@ -38,6 +38,8 @@ export default function MainScreen({ navigation }) {
   const [weatherAlerts, setWeatherAlerts] = useState([]);
   const today = new Date();
   const [readMore, setReadMore] = useState(false);
+  const [allHours, setAllHours] = useState([]);
+
 
   useEffect(() => {
     setLoading(true);
@@ -62,7 +64,7 @@ export default function MainScreen({ navigation }) {
   const getForecast1DayWeatherData = async () => {
     const data = await fetchForecastPerDay({
       q: city.city.trim(),
-      days: 1,
+      days: 2,
       alerts: 'yes',
     });
 
@@ -71,10 +73,16 @@ export default function MainScreen({ navigation }) {
       setForecast1Day(data);
       setHourlyWeather(data.data?.forecast?.forecastday[0]?.hour);
       setWeatherAlerts(data.data?.alerts?.alert);
+
+      data.data?.forecast?.forecastday.map(day => {
+        day.hour.map(el => {
+          setAllHours(prev => [...prev, el]);
+        });
+      });
     }
   };
 
-  // console.log('--->>>----', weatherAlerts[0].desc);
+  // console.log('======== ', allHours);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -146,11 +154,12 @@ export default function MainScreen({ navigation }) {
             </View>
           )}
 
-          {/* hourly weather component */}
+          {/* hourly forecast component */}
           <HourlyWeather
             hourlyWeather={hourlyWeather}
             currWeather={currentWeather}
             lastUpdated={lastUpdated}
+            allHours={allHours}
           />
 
           <View style={styles.textInfoCont}>
@@ -165,7 +174,7 @@ export default function MainScreen({ navigation }) {
             </Text>
           </View>
 
-          {/* daily weather componenty */}
+          {/* daily forecast componenty */}
           <DailyWeather city={city.city} />
 
           <View style={styles.shortInfo}>

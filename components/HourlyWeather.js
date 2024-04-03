@@ -16,8 +16,8 @@ import {
 import { darkBlue, whiteColor } from '../assets/colors/colors';
 const { width, height } = Dimensions.get('screen');
 
-export default function HourlyWeather({ hourlyWeather, currWeather, lastUpdated }) {
-    // console.log('======== ', lastUpdated);
+export default function HourlyWeather({ hourlyWeather, currWeather, lastUpdated, allHours }) {
+    // console.log('========>>> ', allHours[24].time);
 
     return (
         <View style={styles.hourlyWeatherCont}>
@@ -26,24 +26,41 @@ export default function HourlyWeather({ hourlyWeather, currWeather, lastUpdated 
                 Ex: Periods of light rain early. Low 3°C.*/}
                 <Text style={styles.pastWeatherText}>{currWeather.current?.condition?.text}</Text>
             </View>
-            
+
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.hourlyWeatherScrollCont}
             >
-                {hourlyWeather?.map((el, i) => {
+                {/* {hourlyWeather?.map((el, i) => {
                     let hour = Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4, -3) : el.time.slice(-5, -3);
                     return (Number(lastUpdated) <= hour ? (
                         <View key={i} style={styles.hourCont}>
-                            <Text style={styles.hour}>{Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4) : el.time.slice(-5)}</Text>
+                            <Text style={styles.hour}>
+                                {Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4) : el.time.slice(-5)}
+                            </Text>
                             <Image style={styles.img} source={{ uri: `https:${el?.condition?.icon}` }} />
                             <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
                             <Text style={styles.humidity}>{el.humidity}%</Text>
                         </View>
                     ) : null);
-                    
+                })} */}
+
+                {allHours.slice(lastUpdated, Number(lastUpdated) + 24)?.map((el, i) => {
+                    {/* console.log('####### ', el.time); */}
+                    {/* let hour = Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4, -3) : el.time.slice(-5, -3); */}
+                    return (
+                        <View key={i} style={styles.hourCont}>
+                            <Text style={styles.hour}>
+                                {Number(el.time.slice(-5, -4)) === 0 ? el.time.slice(-4) : el.time.slice(-5)}
+                            </Text>
+                            <Image style={styles.img} source={{ uri: `https:${el?.condition?.icon}` }} />
+                            <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
+                            <Text style={styles.humidity}>{el.humidity}%</Text>
+                        </View>
+                    );
                 })}
+                
             </ScrollView>
         </View>
     );
@@ -108,19 +125,7 @@ const styles = StyleSheet.create({
 });
 
 
+
 /* 
-
-{hourlyWeather?.map((el, i) => {
-    console.log(lastUpdated <= el.time.slice(-5, -3) === true ? el.time.slice(-5, -3) : 'NO');
-
-    return (
-        <View key={i} style={styles.hourCont}>
-            <Text style={styles.hour}>{el.time.slice(-5)}</Text>
-            <Image style={styles.img} source={{ uri: `https:${el?.condition?.icon}` }} />
-            <Text style={styles.degree}>{Math.round(el.temp_c)}°</Text>
-            <Text style={styles.humidity}>{el.humidity}%</Text>
-        </View>
-    );
-})} 
     
 */
